@@ -9,7 +9,7 @@ type PriceSchema struct {
 	// If choose unit please provide a price and a minimum_price
 	SchemaType string `json:"schema_type,omitempty"`
 	// If choose unit please provide a quantity
-	Quantity int32 `json:"quantity,omitempty"`
+	Quantity int `json:"quantity,omitempty"`
 
 	// Only works with package, volume e tier.
 	PriceBrackets *[]PriceBracket `json:"price_brackets,omitempty"`

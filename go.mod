@@ -1,3 +1,3 @@
-module github.com/lusantisuper/mundipagg
+module github.com/enxservices/mundipagg
 
 go 1.15

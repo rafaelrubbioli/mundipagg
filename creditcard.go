@@ -15,7 +15,7 @@ func (m mundipagg) NewCardByToken(customerID string, cardToken string, indepoten
 
 // CreditCard Struct that holds a CreditCard object
 type CreditCard struct {
-	Installments int32 `json:"installments,omitempty"`
+	Installments int `json:"installments,omitempty"`
 	// StatementDescriptor description that appears on the credit card bill -> Max 22 characters
 	StatementDescriptor string `json:"statement_descriptor,omitempty"`
 	// OperationType if the transactions needs to be captuured
@@ -38,7 +38,7 @@ type CreditCard struct {
 	// Code for the super limit
 	ExtendedLimitCode string `json:"extended_limit_code,omitempty"`
 	// Code for the type of store
-	MerchantCategoryCode int32 `json:"merchant_id,omitempty"`
+	MerchantCategoryCode int `json:"merchant_id,omitempty"`
 
 	// Authentication
 	Authentication *interface{} // TODO ----------------------

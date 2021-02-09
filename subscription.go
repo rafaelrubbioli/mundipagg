@@ -26,21 +26,21 @@ type Subscription struct {
 	StartAt *time.Time `json:"start_at,omitempty"`
 
 	// Minimum value in cents
-	MinimumPrice int32 `json:"minimum_price,omitempty"`
+	MinimumPrice int `json:"minimum_price,omitempty"`
 
 	// Interval between the charges
 	Interval      string `json:"interval,omitempty"`
-	IntervalCount int32  `json:"interval_count,omitempty"`
+	IntervalCount int  `json:"interval_count,omitempty"`
 	BillingType   string `json:"billing_type,omitempty"`
 	// If BillingType is a exact day set this variable
-	BillingDay int32 `json:"billing_day,omitempty"`
+	BillingDay int `json:"billing_day,omitempty"`
 
 	// Description for the payment
 	Description string `json:"description,omitempty"`
 
 	// CREDIT CARD
 	// If the payments is credit card set the number of installments
-	Installments int32 `json:"installments,omitempty"`
+	Installments int `json:"installments,omitempty"`
 	// Text to appear on the credit card bill
 	StatementDescriptor string `json:"statement_descriptor,omitempty"`
 
@@ -65,7 +65,7 @@ type Subscription struct {
 	// GatewayAffiliationID affiliation id gived by the store
 	GatewayAffiliationID string `json:"gateway_affiliation_id,omitempty"`
 	// BoletoDueDays Days to expire the boleto, not passing
-	BoletoDueDays int32 `json:"boleto_due_days,omitempty"`
+	BoletoDueDays int `json:"boleto_due_days,omitempty"`
 
 	// Card to make the credit or debit payment
 	Card *SubscriptionCards `json:"card,omitempty"`
@@ -163,8 +163,8 @@ func (s *Subscription) BillingTypes(billingType int) {
 // BillExtras extra information about discount and increments in the payments
 type BillExtras struct {
 	ID           string `json:"id,omitempty"`
-	Cycles       int32  `json:"cycles,omitempty"`
-	Value        int32  `json:"value,omitempty"`
+	Cycles       int  `json:"cycles,omitempty"`
+	Value        int  `json:"value,omitempty"`
 	DiscountType string `json:"discount_type,omitempty"`
 	// Write the id if you want to inform the product to recive the discount or increment
 	// Leave empty if you want to apply to the entire bill
@@ -206,9 +206,9 @@ type Item struct {
 	// Description for the item
 	Description string `json:"description,omitempty"`
 	// Number of times to be charged
-	Cycles int32 `json:"cycles,omitempty"`
+	Cycles int `json:"cycles,omitempty"`
 	// Quantity of itens
-	Quantity int32 `json:"quantity,omitempty"`
+	Quantity int `json:"quantity,omitempty"`
 
 	// Item status
 	Status string `json:"status,omitempty"`
@@ -246,7 +246,7 @@ func (i *Item) StatusTypes(statusType int) {
 
 // Setup for the payments
 type Setup struct {
-	Amount      int32    `json:"amount"`
+	Amount      int    `json:"amount"`
 	Description string   `json:"description"`
 	Payment     *Payment `json:"payment"`
 }
