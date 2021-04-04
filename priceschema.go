@@ -2,8 +2,8 @@ package mundipagg
 
 // PriceSchema schemas to precify the items for the products
 type PriceSchema struct {
-	Price        int64 `json:"price,omitempty"`
-	MinimumPrice int64 `json:"minimum_price,omitempty"`
+	Price        int `json:"price,omitempty"`
+	MinimumPrice int `json:"minimum_price,omitempty"`
 
 	// Schema types
 	// If choose unit please provide a price and a minimum_price
