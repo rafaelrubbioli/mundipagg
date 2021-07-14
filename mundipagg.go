@@ -1,33 +1,102 @@
 package mundipagg
 
-// Mundipagg struct that holds all functions working in the lib
+import (
+	"net/http"
+	"time"
+)
+
 type Mundipagg interface {
-	NewSubscription(s *Subscription, indepotencyKey string) (*Response, error)
-	NewCustomer(c *Customer, indepotencyKey string) (*Response, error)
-	NewCardByToken(customerID string, cardToken string, indepotencyKey string) (*Response, error)
-	UpdateStartAt(u *UpdateStartAtSubscription, mundipaggCustomerID string, indepotencyKey string) (*Response, error)
-	UpdateNextBillingDay(u *UpdateNextBillingDaySubscription, mundipaggCustomerID string, indepotencyKey string) (*Response, error)
-	AddDiscount(b *BillExtras, mundipaggSubscriptionID string, indepotencyKey string) (*Response, error)
+	NewSubscription(subscription *Subscription, uuid string) (*Response, error)
+	NewCustomer(customer *Customer, uuid string) (*Response, error)
+	NewCardByToken(customerID string, cardToken string, uuid string) (*Response, error)
+	UpdateStartAt(input *string, mundipaggCustomerID string, uuid string) (*Response, error)
+	UpdateNextBillingDay(nextBillingDay *time.Time, mundipaggCustomerID string, uuid string) (*Response, error)
+	AddDiscount(billExtras *BillExtras, mundipaggSubscriptionID string, uuid string) (*Response, error)
 }
 
-// Login A struct that holds the login information
 type mundipagg struct {
 	BasicSecretAuthKey string
 }
 
-// New Create a Mundipagg object
-func New(basicSecretAuthKey string, testBasicSecretKey string, isProduction bool) (Mundipagg, error) {
+func New(basicSecretAuthKey string, testBasicSecretKey string, isProduction bool) Mundipagg {
 	secret := basicSecretAuthKey
 	if !isProduction {
 		secret = testBasicSecretKey
 	}
 
-	// Create the mundipagg object
-	mund := mundipagg{
+	return mundipagg{
 		BasicSecretAuthKey: secret,
 	}
-
-	return mund, nil
 }
 
-func main() {}
+func (m mundipagg) NewCardByToken(customerID string, cardToken string, uuid string) (*Response, error) {
+	creditCardLink := BASEURL + customerID + CARDENDPOINT
+	card := &CreditCardToken{
+		Token: cardToken,
+	}
+
+	resp, err := Do(http.MethodPost, card, m.BasicSecretAuthKey, uuid, creditCardLink)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m mundipagg) NewCustomer(c *Customer, uuid string) (*Response, error) {
+	resp, err := Do(http.MethodPost, c, m.BasicSecretAuthKey, uuid, CUSTOMERURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m mundipagg) AddDiscount(extras *BillExtras, mundipaggSubscriptionID string, uuid string) (*Response, error) {
+	completeURL := SUBSCRIPTIONURL + "/" + mundipaggSubscriptionID + DISCOUNTENDPOINT
+	resp, err := Do(http.MethodPost, extras, m.BasicSecretAuthKey, uuid, completeURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m mundipagg) NewSubscription(s *Subscription, uuid string) (*Response, error) {
+	resp, err := Do(http.MethodPost, s, m.BasicSecretAuthKey, uuid, SUBSCRIPTIONURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m mundipagg) UpdateStartAt(startAt *string, mundipaggCustomerID string, uuid string) (*Response, error) {
+	input := struct {
+		StartAt *string `json:"start_at,omitempty"`
+	}{
+		StartAt: startAt,
+	}
+	completeURL := SUBSCRIPTIONURL + "/" + mundipaggCustomerID + SUBSCRIPTIONUPDATESTARTATURL
+	resp, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, uuid, completeURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (m mundipagg) UpdateNextBillingDay(nextBillingDay *time.Time, mundipaggCustomerID string, indepotencyKey string) (*Response, error) {
+	input := struct {
+		NextBillingDay *time.Time `json:"next_billing_at,omitempty"`
+	}{
+		NextBillingDay: nextBillingDay,
+	}
+	completeURL := SUBSCRIPTIONURL + "/" + mundipaggCustomerID + SUBSCRIPTIONUPDATENEXTBILLINGDAYURL
+	resp, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, indepotencyKey, completeURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
