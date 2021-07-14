@@ -3,13 +3,13 @@ package mundipagg
 import "time"
 
 type Boleto struct {
-	Bank           Bank        `json:"bank,omitempty"`
-	Instructions   string      `json:"instructions,omitempty"` // max: 256 characters
-	DueAt          *time.Time  `json:"due_at,omitempty"`
-	NossoNumero    string      `json:"nosso_numero,omitempty"`
-	Type           BoletoType  `json:"type,omitempty"`
-	Metadata       interface{} `json:"metadata,omitempty"`
-	DocumentNumber string      `json:"document_number,omitempty"`
+	Bank           Bank                   `json:"bank,omitempty"`
+	Instructions   string                 `json:"instructions,omitempty"` // max: 256 characters
+	DueAt          *time.Time             `json:"due_at,omitempty"`
+	NossoNumero    string                 `json:"nosso_numero,omitempty"`
+	Type           BoletoType             `json:"type,omitempty"`
+	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+	DocumentNumber string                 `json:"document_number,omitempty"`
 }
 
 type Bank string
@@ -38,13 +38,13 @@ type CreditCard struct {
 	CardID               string        `json:"card_id,omitempty"`
 	CardToken            string        `json:"card_token,omitempty"`
 	Recurrence           bool          `json:"recurrence,omitempty"`
-	Metadata             *interface{}  // TODO ----------------------
-	ExtendedLimitEnabled bool          `json:"extended_limit_enabled,omitempty"`
-	ExtendedLimitCode    string        `json:"extended_limit_code,omitempty"`
-	MerchantCategoryCode int           `json:"merchant_id,omitempty"`
-	Authentication       *interface{}  // TODO ----------------------
-	AutoRecovery         bool          `json:"auto_recovery,omitempty"`
-	Payload              *interface{}  `json:"payload,omitempty"` // TODO ---------------
+	Metadata             map[string]interface{}
+	ExtendedLimitEnabled bool         `json:"extended_limit_enabled,omitempty"`
+	ExtendedLimitCode    string       `json:"extended_limit_code,omitempty"`
+	MerchantCategoryCode int          `json:"merchant_id,omitempty"`
+	Authentication       *interface{} // TODO ----------------------
+	AutoRecovery         bool         `json:"auto_recovery,omitempty"`
+	Payload              *interface{} `json:"payload,omitempty"` // TODO ---------------
 }
 
 type OperationType string
@@ -65,16 +65,16 @@ type CreditCardOptions struct {
 }
 
 type Customer struct {
-	Name     string       `json:"name,omitempty"`
-	Email    string       `json:"email,omitempty"`
-	Code     string       `json:"code,omitempty"`
-	Document string       `json:"document,omitempty"`
-	Type     DocumentType `json:"type,omitempty"`
-	Gender   string       `json:"gender,omitempty"`
-	Address  *Address     `json:"address,omitempty"`
-	Phones   *Phones      `json:"phones,omitempty"`
-	Birthday *time.Time   `json:"birthday,omitempty"`
-	Metadata interface{}  `json:"metadata,omitempty"`
+	Name     string                 `json:"name,omitempty"`
+	Email    string                 `json:"email,omitempty"`
+	Code     string                 `json:"code,omitempty"`
+	Document string                 `json:"document,omitempty"`
+	Type     DocumentType           `json:"type,omitempty"`
+	Gender   string                 `json:"gender,omitempty"`
+	Address  *Address               `json:"address,omitempty"`
+	Phones   *Phones                `json:"phones,omitempty"`
+	Birthday *time.Time             `json:"birthday,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
 type DocumentType string
@@ -134,29 +134,29 @@ type PriceBracket struct {
 }
 
 type Subscription struct {
-	Code                 string             `json:"code,omitempty"`
-	PaymentMethod        Method             `json:"payment_method,omitempty"`
-	Currency             Currency           `json:"currency,omitempty"`
-	StartAt              *time.Time         `json:"start_at,omitempty"`
-	MinimumPrice         int                `json:"minimum_price,omitempty"`
-	Interval             Interval           `json:"interval,omitempty"`
-	IntervalCount        int                `json:"interval_count,omitempty"`
-	BillingType          BillingType        `json:"billing_type,omitempty"`
-	BillingDay           int                `json:"billing_day,omitempty"`
-	Description          string             `json:"description,omitempty"`
-	Installments         int                `json:"installments,omitempty"`
-	StatementDescriptor  string             `json:"statement_descriptor,omitempty"`
-	CustomerID           string             `json:"customer_id,omitempty"`
-	Customer             *Customer          `json:"customer,omitempty"`
-	Discounts            *[]BillExtras      `json:"discount,omitempty"`
-	Increments           *[]BillExtras      `json:"increments,omitempty"`
-	Items                *[]Item            `json:"items,omitempty"`
-	Setup                *Setup             `json:"setup,omitempty"`
-	GatewayAffiliationID string             `json:"gateway_affiliation_id,omitempty"`
-	BoletoDueDays        int                `json:"boleto_due_days,omitempty"`
-	Card                 *SubscriptionCards `json:"card,omitempty"`
-	Boleto               *Boleto            `json:"boleto,omitempty"`
-	Metadata             interface{}        `json:"metadata,omitempty"`
+	Code                 string                 `json:"code,omitempty"`
+	PaymentMethod        Method                 `json:"payment_method,omitempty"`
+	Currency             Currency               `json:"currency,omitempty"`
+	StartAt              *time.Time             `json:"start_at,omitempty"`
+	MinimumPrice         int                    `json:"minimum_price,omitempty"`
+	Interval             Interval               `json:"interval,omitempty"`
+	IntervalCount        int                    `json:"interval_count,omitempty"`
+	BillingType          BillingType            `json:"billing_type,omitempty"`
+	BillingDay           int                    `json:"billing_day,omitempty"`
+	Description          string                 `json:"description,omitempty"`
+	Installments         int                    `json:"installments,omitempty"`
+	StatementDescriptor  string                 `json:"statement_descriptor,omitempty"`
+	CustomerID           string                 `json:"customer_id,omitempty"`
+	Customer             *Customer              `json:"customer,omitempty"`
+	Discounts            *[]BillExtras          `json:"discount,omitempty"`
+	Increments           *[]BillExtras          `json:"increments,omitempty"`
+	Items                *[]Item                `json:"items,omitempty"`
+	Setup                *Setup                 `json:"setup,omitempty"`
+	GatewayAffiliationID string                 `json:"gateway_affiliation_id,omitempty"`
+	BoletoDueDays        int                    `json:"boleto_due_days,omitempty"`
+	Card                 *SubscriptionCards     `json:"card,omitempty"`
+	Boleto               *Boleto                `json:"boleto,omitempty"`
+	Metadata             map[string]interface{} `json:"metadata,omitempty"`
 }
 
 type Method string
@@ -251,14 +251,14 @@ type Setup struct {
 }
 
 type Payment struct {
-	PaymentMethod        Method      `json:"payment_method,omitempty"`
-	CreditCard           *CreditCard `json:"credit_card,omitempty"`
-	Voucher              interface{} `json:"voucher,omitempty"`
-	Boleto               *Boleto     `json:"boleto,omitempty"`
-	BankTransfer         interface{} `json:"bank_transfer,omitempty"`
-	Checkout             interface{} `json:"checkout,omitempty"`
-	Cash                 interface{} `json:"cash,omitempty"`
-	Amount               int64       `json:"amount,omitempty"`
-	Metadata             interface{} `json:"metadata,omitempty"`
-	GatewayAffiliationID string      `json:"gateway_affiliation_id,omitempty"`
+	PaymentMethod        Method                 `json:"payment_method,omitempty"`
+	CreditCard           *CreditCard            `json:"credit_card,omitempty"`
+	Voucher              interface{}            `json:"voucher,omitempty"`
+	Boleto               *Boleto                `json:"boleto,omitempty"`
+	BankTransfer         interface{}            `json:"bank_transfer,omitempty"`
+	Checkout             interface{}            `json:"checkout,omitempty"`
+	Cash                 interface{}            `json:"cash,omitempty"`
+	Amount               int64                  `json:"amount,omitempty"`
+	Metadata             map[string]interface{} `json:"metadata,omitempty"`
+	GatewayAffiliationID string                 `json:"gateway_affiliation_id,omitempty"`
 }
