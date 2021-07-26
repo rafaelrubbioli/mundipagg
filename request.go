@@ -11,13 +11,8 @@ import (
 )
 
 const (
-	BASEURL                             string = "https://api.mundipagg.com/core/v1/"
-	CUSTOMERURL                         string = BASEURL + "customers"
-	SUBSCRIPTIONURL                     string = BASEURL + "subscriptions"
-	SUBSCRIPTIONUPDATENEXTBILLINGDAYURL string = "/billing-date"
-	SUBSCRIPTIONUPDATESTARTATURL        string = "/start-at"
-	CARDENDPOINT                        string = "cards"
-	DISCOUNTENDPOINT                    string = "/discounts"
+	BASEURL      string = "https://api.mundipagg.com/core/v1/"
+	CARDENDPOINT string = "cards"
 )
 
 type Response struct {
@@ -31,7 +26,7 @@ type Response struct {
 	MundipaggJSONAnswer string
 }
 
-func Do(method string, data interface{}, secretKey string, indepotencyKey string, url string) (*Response, error) {
+func Do(method string, data interface{}, secretKey string, uuid string, url string) (*Response, error) {
 	postData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -45,8 +40,8 @@ func Do(method string, data interface{}, secretKey string, indepotencyKey string
 	token := base64.StdEncoding.EncodeToString([]byte(secretKey + ":"))
 	req.Header.Set("Authorization", "Basic "+token)
 	req.Header.Set("Content-Type", "application/json")
-	if indepotencyKey != "" {
-		req.Header.Set("Idempotency-Key", indepotencyKey)
+	if uuid != "" {
+		req.Header.Set("Idempotency-Key", uuid)
 	}
 
 	client := &http.Client{}
