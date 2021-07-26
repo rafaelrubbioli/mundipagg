@@ -1,15 +1,32 @@
 package mundipagg
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Boleto struct {
 	Bank           Bank                   `json:"bank,omitempty"`
-	Instructions   string                 `json:"instructions,omitempty"` // max: 256 characters
+	Instructions   string                 `json:"instructions,omitempty"`
 	DueAt          *time.Time             `json:"due_at,omitempty"`
 	NossoNumero    string                 `json:"nosso_numero,omitempty"`
 	Type           BoletoType             `json:"type,omitempty"`
 	Metadata       map[string]interface{} `json:"metadata,omitempty"`
 	DocumentNumber string                 `json:"document_number,omitempty"`
+}
+
+func (b Boleto) Validate() bool {
+	return len(b.Instructions) <= 256
+}
+
+func NewBoleto(input []byte) (*Boleto, error) {
+	boleto := new(Boleto)
+	err := json.Unmarshal(input, boleto)
+	if err != nil {
+		return nil, err
+	}
+
+	return boleto, nil
 }
 
 type Bank string
@@ -31,20 +48,34 @@ const (
 )
 
 type CreditCard struct {
-	Installments         int           `json:"installments,omitempty"`
-	StatementDescriptor  string        `json:"statement_descriptor,omitempty"` // ax 22 characters
-	OperationType        OperationType `json:"Operation_type,omitempty"`
-	CardCredit           *CreditCard   `json:"credit_card,omitempty"`
-	CardID               string        `json:"card_id,omitempty"`
-	CardToken            string        `json:"card_token,omitempty"`
-	Recurrence           bool          `json:"recurrence,omitempty"`
-	Metadata             map[string]interface{}
-	ExtendedLimitEnabled bool         `json:"extended_limit_enabled,omitempty"`
-	ExtendedLimitCode    string       `json:"extended_limit_code,omitempty"`
-	MerchantCategoryCode int          `json:"merchant_id,omitempty"`
-	Authentication       *interface{} // TODO ----------------------
-	AutoRecovery         bool         `json:"auto_recovery,omitempty"`
-	Payload              *interface{} `json:"payload,omitempty"` // TODO ---------------
+	Installments         int                    `json:"installments,omitempty"`
+	StatementDescriptor  string                 `json:"statement_descriptor,omitempty"`
+	OperationType        OperationType          `json:"Operation_type,omitempty"`
+	CardCredit           *CreditCard            `json:"credit_card,omitempty"`
+	CardID               string                 `json:"card_id,omitempty"`
+	CardToken            string                 `json:"card_token,omitempty"`
+	Recurrence           bool                   `json:"recurrence,omitempty"`
+	Metadata             map[string]interface{} `json:"metadata,omitempty"`
+	ExtendedLimitEnabled bool                   `json:"extended_limit_enabled,omitempty"`
+	ExtendedLimitCode    string                 `json:"extended_limit_code,omitempty"`
+	MerchantCategoryCode int                    `json:"merchant_id,omitempty"`
+	Authentication       *interface{}           // TODO ----------------------
+	AutoRecovery         bool                   `json:"auto_recovery,omitempty"`
+	Payload              *interface{}           `json:"payload,omitempty"` // TODO ---------------
+}
+
+func (c CreditCard) Validate() bool {
+	return len(c.StatementDescriptor) <= 22
+}
+
+func NewCreditCard(input []byte) (*CreditCard, error) {
+	creditCard := new(CreditCard)
+	err := json.Unmarshal(input, creditCard)
+	if err != nil {
+		return nil, err
+	}
+
+	return creditCard, nil
 }
 
 type OperationType string
@@ -65,6 +96,7 @@ type CreditCardOptions struct {
 }
 
 type Customer struct {
+	ID       string                 `json:"id"`
 	Name     string                 `json:"name,omitempty"`
 	Email    string                 `json:"email,omitempty"`
 	Code     string                 `json:"code,omitempty"`
@@ -75,6 +107,16 @@ type Customer struct {
 	Phones   *Phones                `json:"phones,omitempty"`
 	Birthday *time.Time             `json:"birthday,omitempty"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+func NewCustomer(input []byte) (*Customer, error) {
+	customer := new(Customer)
+	err := json.Unmarshal(input, customer)
+	if err != nil {
+		return nil, err
+	}
+
+	return customer, nil
 }
 
 type DocumentType string
@@ -96,6 +138,16 @@ type Address struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+}
+
+func NewAddress(input []byte) (*Address, error) {
+	address := new(Address)
+	err := json.Unmarshal(input, address)
+	if err != nil {
+		return nil, err
+	}
+
+	return address, nil
 }
 
 type Phones struct {
@@ -134,6 +186,7 @@ type PriceBracket struct {
 }
 
 type Subscription struct {
+	ID                   string                 `json:"id"`
 	Code                 string                 `json:"code,omitempty"`
 	PaymentMethod        Method                 `json:"payment_method,omitempty"`
 	Currency             Currency               `json:"currency,omitempty"`
@@ -157,6 +210,16 @@ type Subscription struct {
 	Card                 *SubscriptionCards     `json:"card,omitempty"`
 	Boleto               *Boleto                `json:"boleto,omitempty"`
 	Metadata             map[string]interface{} `json:"metadata,omitempty"`
+}
+
+func NewSubscription(input []byte) (*Subscription, error) {
+	subscription := new(Subscription)
+	err := json.Unmarshal(input, subscription)
+	if err != nil {
+		return nil, err
+	}
+
+	return subscription, nil
 }
 
 type Method string
@@ -262,3 +325,131 @@ type Payment struct {
 	Metadata             map[string]interface{} `json:"metadata,omitempty"`
 	GatewayAffiliationID string                 `json:"gateway_affiliation_id,omitempty"`
 }
+
+func NewPayment(input []byte) (*Payment, error) {
+	payment := new(Payment)
+	err := json.Unmarshal(input, payment)
+	if err != nil {
+		return nil, err
+	}
+
+	return payment, nil
+}
+
+type Webhook struct {
+	ID                 string                 `json:"id"`
+	URL                string                 `json:"url"`
+	Event              WebhookEvent           `json:"event"`
+	Status             Status                 `json:"status"`
+	Attempts           string                 `json:"attempts"`
+	LastAttemptDate    time.Time              `json:"last_attempt"`
+	ServerResponseCode string                 `json:"response_status"`
+	ResponseRaw        string                 `json:"response_raw"`
+	Account            Account                `json:"account"`
+	RelatedObject      map[string]interface{} `json:"data"`
+}
+
+func NewWebhook(input []byte) (*Webhook, error) {
+	webhook := new(Webhook)
+	err := json.Unmarshal(input, webhook)
+	if err != nil {
+		return nil, err
+	}
+
+	return webhook, nil
+}
+
+type Account struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type Status string
+
+const (
+	Pending Status = "pending"
+	Sent    Status = "sent"
+	Failed  Status = "failed"
+)
+
+type WebhookEvent string
+
+const (
+	CustomerCreated         WebhookEvent = "customer.created"
+	CustomerUpdated         WebhookEvent = "customer.updated"
+	CardCreated             WebhookEvent = "card.created"
+	CardUpdated             WebhookEvent = "card.updated"
+	CardDeleted             WebhookEvent = "card.deleted"
+	CardExpired             WebhookEvent = "card.expired"
+	AddressCreated          WebhookEvent = "address.created"
+	AddressUpdated          WebhookEvent = "address.updated"
+	AddressDeleted          WebhookEvent = "address.deleted"
+	PlanCreated             WebhookEvent = "plan.created"
+	PlanUpdated             WebhookEvent = "plan.updated"
+	PlanDeleted             WebhookEvent = "plan.deleted"
+	PlanItemCreated         WebhookEvent = "plan_item.created"
+	PlanItemUpdated         WebhookEvent = "plan_item.updated"
+	PlanItemDeleted         WebhookEvent = "plan_item.deleted"
+	SubscriptionCreated     WebhookEvent = "subscription.created"
+	SubscriptionCanceled    WebhookEvent = "subscription.canceled"
+	SubscriptionItemCreated WebhookEvent = "subscription_item.created"
+	SubscriptionItemUpdated WebhookEvent = "subscription_item.updated"
+	SubscriptionItemDeleted WebhookEvent = "subscription_item.deleted"
+	DiscountCreated         WebhookEvent = "discount.created"
+	DiscountDeleted         WebhookEvent = "discount.deleted"
+	IncrementCreated        WebhookEvent = "increment.created"
+	IncrementDeleted        WebhookEvent = "increment.deleted"
+	OrderPaid               WebhookEvent = "order.paid"
+	OrderPaymentFailed      WebhookEvent = "order.payment_failed"
+	OrderCreated            WebhookEvent = "order.created"
+	OrderCanceled           WebhookEvent = "order.canceled"
+	OrderClosed             WebhookEvent = "order.closed"
+	OrderUpdated            WebhookEvent = "order.updated"
+	OrderItemCreated        WebhookEvent = "order_item.created"
+	OrderItemUpdated        WebhookEvent = "order_item.updated"
+	OrderItemDeleted        WebhookEvent = "order_item.deleted"
+	InvoiceCreated          WebhookEvent = "invoice.created"
+	InvoiceUpdated          WebhookEvent = "invoice.updated"
+	InvoicePaid             WebhookEvent = "invoice.paid"
+	InvoicePaymentFailed    WebhookEvent = "invoice.payment_failed"
+	InvoiceCanceled         WebhookEvent = "invoice.canceled"
+	ChargeCreated           WebhookEvent = "charge.created"
+	ChargeUpdated           WebhookEvent = "charge.updated"
+	ChargePaid              WebhookEvent = "charge.paid"
+	ChargePaymentFailed     WebhookEvent = "charge.payment_failed"
+	ChargeRefunded          WebhookEvent = "charge.refunded"
+	ChargePending           WebhookEvent = "charge.pending"
+	ChargeProcessing        WebhookEvent = "charge.processing"
+	ChargeUnderpaid         WebhookEvent = "charge.underpaid"
+	ChargeOverpaid          WebhookEvent = "charge.overpaid"
+	ChargePartialCanceled   WebhookEvent = "charge.partial_canceled"
+	ChargeAntifraudApproved WebhookEvent = "charge.antifraud_approved"
+	ChargeAntifraudReproved WebhookEvent = "charge.antifraud_reproved"
+	ChargeAntifraudManual   WebhookEvent = "charge.antifraud_manual"
+	ChargeAntifraudPending  WebhookEvent = "charge.antifraud_pending"
+	UsageCreated            WebhookEvent = "usage.created"
+	UsageDeleted            WebhookEvent = "usage.deleted"
+	RecipientCreated        WebhookEvent = "recipient.created"
+	RecipientDeleted        WebhookEvent = "recipient.deleted"
+	RecipientUpdated        WebhookEvent = "recipient.updated"
+	BankAccountCreated      WebhookEvent = "bank_account.created"
+	BankAccountUpdated      WebhookEvent = "bank_account.updated"
+	BankAccountDeleted      WebhookEvent = "bank_account.deleted"
+	SellerCreated           WebhookEvent = "seller.created"
+	SellerUpdated           WebhookEvent = "seller.updated"
+	SellerDeleted           WebhookEvent = "seller.deleted"
+	TransferPending         WebhookEvent = "transfer.pending"
+	TransferCreated         WebhookEvent = "transfer.created"
+	TransferProcessing      WebhookEvent = "transfer.processing"
+	TransferPaid            WebhookEvent = "transfer.paid"
+	TransferCanceled        WebhookEvent = "transfer.canceled"
+	TransferFailed          WebhookEvent = "transfer.failed"
+	AnticipationPending     WebhookEvent = "anticipation.pending"
+	AnticipationCreated     WebhookEvent = "anticipation.created"
+	AnticipationApproved    WebhookEvent = "anticipation.approved"
+	AnticipationCanceled    WebhookEvent = "anticipation.canceled"
+	AnticipationFailed      WebhookEvent = "anticipation.failed"
+	AnticipationRefused     WebhookEvent = "anticipation.refused"
+	CheckoutCreated         WebhookEvent = "checkout.created"
+	CheckoutCanceled        WebhookEvent = "checkout.canceled"
+)

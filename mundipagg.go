@@ -6,12 +6,12 @@ import (
 )
 
 type Mundipagg interface {
-	NewSubscription(subscription *Subscription, uuid string) (*Response, error)
-	NewCustomer(customer *Customer, uuid string) (*Response, error)
-	NewCardByToken(customerID string, cardToken string, uuid string) (*Response, error)
-	UpdateStartAt(input *string, subscriptionID string, uuid string) (*Response, error)
-	UpdateNextBillingDay(nextBillingDay *time.Time, customerID string, uuid string) (*Response, error)
-	AddDiscount(billExtras *BillExtras, subscriptionID string, uuid string) (*Response, error)
+	NewSubscription(subscription *Subscription, uuid string) (*Subscription, error)
+	NewCustomer(customer *Customer, uuid string) (*Customer, error)
+	NewCardByToken(customerID string, cardToken string, uuid string) (*CreditCard, error)
+	UpdateStartAt(input *string, subscriptionID string, uuid string) error
+	UpdateNextBillingDay(nextBillingDay *time.Time, customerID string, uuid string) error
+	AddDiscount(billExtras *BillExtras, subscriptionID string, uuid string) error
 }
 
 type mundipagg struct {
@@ -24,74 +24,75 @@ func New(secret string) Mundipagg {
 	}
 }
 
-func (m mundipagg) NewCardByToken(customerID string, cardToken string, uuid string) (*Response, error) {
-	creditCardLink := BASEURL + customerID + CARDENDPOINT
+func (m mundipagg) NewCardByToken(customerID string, cardToken string, uuid string) (*CreditCard, error) {
 	card := &CreditCardToken{
 		Token: cardToken,
 	}
 
-	resp, err := Do(http.MethodPost, card, m.BasicSecretAuthKey, uuid, creditCardLink)
+	resp, err := Do(http.MethodPost, card, m.BasicSecretAuthKey, uuid, BASEURL+customerID+"/cards")
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
-}
-
-func (m mundipagg) NewCustomer(c *Customer, uuid string) (*Response, error) {
-	resp, err := Do(http.MethodPost, c, m.BasicSecretAuthKey, uuid, CUSTOMERURL)
+	result, err := NewCreditCard(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return result, nil
 }
 
-func (m mundipagg) AddDiscount(extras *BillExtras, subscriptionID string, uuid string) (*Response, error) {
-	completeURL := SUBSCRIPTIONURL + "/" + subscriptionID + DISCOUNTENDPOINT
-	resp, err := Do(http.MethodPost, extras, m.BasicSecretAuthKey, uuid, completeURL)
+func (m mundipagg) NewCustomer(c *Customer, uuid string) (*Customer, error) {
+	resp, err := Do(http.MethodPost, c, m.BasicSecretAuthKey, uuid, BASEURL+"customers")
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
-}
-
-func (m mundipagg) NewSubscription(s *Subscription, uuid string) (*Response, error) {
-	resp, err := Do(http.MethodPost, s, m.BasicSecretAuthKey, uuid, SUBSCRIPTIONURL)
+	result, err := NewCustomer(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return result, nil
 }
 
-func (m mundipagg) UpdateStartAt(startAt *string, subscriptionID string, uuid string) (*Response, error) {
+func (m mundipagg) AddDiscount(extras *BillExtras, subscriptionID string, uuid string) error {
+	_, err := Do(http.MethodPost, extras, m.BasicSecretAuthKey, uuid, BASEURL+"subscriptions/"+subscriptionID+"/discounts")
+	return err
+}
+
+func (m mundipagg) NewSubscription(s *Subscription, uuid string) (*Subscription, error) {
+	resp, err := Do(http.MethodPost, s, m.BasicSecretAuthKey, uuid, BASEURL+"subscriptions")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := NewSubscription(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (m mundipagg) UpdateStartAt(startAt *string, subscriptionID string, uuid string) error {
 	input := struct {
 		StartAt *string `json:"start_at,omitempty"`
 	}{
 		StartAt: startAt,
 	}
-	completeURL := SUBSCRIPTIONURL + "/" + subscriptionID + SUBSCRIPTIONUPDATESTARTATURL
-	resp, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, uuid, completeURL)
-	if err != nil {
-		return nil, err
-	}
 
-	return resp, nil
+	_, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, uuid, BASEURL+"subscriptions/"+subscriptionID+"/start-at")
+	return err
 }
 
-func (m mundipagg) UpdateNextBillingDay(nextBillingDay *time.Time, customerID string, indepotencyKey string) (*Response, error) {
+func (m mundipagg) UpdateNextBillingDay(nextBillingDay *time.Time, customerID string, indepotencyKey string) error {
 	input := struct {
 		NextBillingDay *time.Time `json:"next_billing_at,omitempty"`
 	}{
 		NextBillingDay: nextBillingDay,
 	}
-	completeURL := SUBSCRIPTIONURL + "/" + customerID + SUBSCRIPTIONUPDATENEXTBILLINGDAYURL
-	resp, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, indepotencyKey, completeURL)
-	if err != nil {
-		return nil, err
-	}
 
-	return resp, nil
+	_, err := Do(http.MethodPatch, input, m.BasicSecretAuthKey, indepotencyKey, BASEURL+"subscriptions/"+customerID+"/billing-date")
+	return err
 }

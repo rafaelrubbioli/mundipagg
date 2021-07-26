@@ -4,34 +4,14 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
-const (
-	BASEURL                             string = "https://api.mundipagg.com/core/v1/"
-	CUSTOMERURL                         string = BASEURL + "customers"
-	SUBSCRIPTIONURL                     string = BASEURL + "subscriptions"
-	SUBSCRIPTIONUPDATENEXTBILLINGDAYURL string = "/billing-date"
-	SUBSCRIPTIONUPDATESTARTATURL        string = "/start-at"
-	CARDENDPOINT                        string = "cards"
-	DISCOUNTENDPOINT                    string = "/discounts"
-)
+const BASEURL string = "https://api.mundipagg.com/core/v1/"
 
-type Response struct {
-	ID         string     `json:"id,omitempty"`
-	Name       string     `json:"name,omitempty"`
-	Email      string     `json:"email,omitempty"`
-	Delinquent bool       `json:"delinquent,omitempty"`
-	CreatedAt  *time.Time `json:"created_at,omitempty"`
-	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
-
-	MundipaggJSONAnswer string
-}
-
-func Do(method string, data interface{}, secretKey string, indepotencyKey string, url string) (*Response, error) {
+func Do(method string, data interface{}, secretKey string, uuid string, url string) ([]byte, error) {
 	postData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -45,8 +25,8 @@ func Do(method string, data interface{}, secretKey string, indepotencyKey string
 	token := base64.StdEncoding.EncodeToString([]byte(secretKey + ":"))
 	req.Header.Set("Authorization", "Basic "+token)
 	req.Header.Set("Content-Type", "application/json")
-	if indepotencyKey != "" {
-		req.Header.Set("Idempotency-Key", indepotencyKey)
+	if uuid != "" {
+		req.Header.Set("Idempotency-Key", uuid)
 	}
 
 	client := &http.Client{}
@@ -62,14 +42,8 @@ func Do(method string, data interface{}, secretKey string, indepotencyKey string
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-		return nil, errors.New("Invalid Request:\nSent:\n" + string(postData) + "Received:\n" + string(body))
+		return nil, fmt.Errorf("invalid status %d: %s", resp.StatusCode, string(body))
 	}
 
-	response := &Response{MundipaggJSONAnswer: string(body)}
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return body, nil
 }
